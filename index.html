@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#071018">
+<title>ミニ不思議ダンジョン</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#071018;--panel:#10202c;--panel2:#152b38;--line:#294152;--txt:#f4f7fb;--muted:#9ab0bd;--hp:#60d36d;--floor:#c9b47c;--floor2:#b59f69;--wall:#455767;--dark:#17212a}
+html,body{margin:0;background:#071018;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;overscroll-behavior:none}
+body{min-height:100svh;display:flex;justify-content:center}
+.app{width:min(100vw,560px);padding:8px 10px calc(14px + env(safe-area-inset-bottom))}
+.top{display:flex;justify-content:space-between;align-items:center;margin:1px 2px 7px}
+.title{font-size:18px;font-weight:800}.badge{font-size:12px;color:#b8c9d2;background:#132733;border:1px solid #294152;padding:5px 8px;border-radius:999px}
+.hud{display:grid;grid-template-columns:1.15fr .85fr;gap:7px;margin-bottom:7px}
+.card{background:linear-gradient(180deg,#10212c,#0d1922);border:1px solid #294152;border-radius:13px;padding:8px 10px;font-size:13px;line-height:1.45}
+.big{font-size:15px;font-weight:800}.bar{height:8px;background:#243746;border-radius:9px;overflow:hidden;margin-top:5px}.fill{height:100%;width:100%;background:linear-gradient(90deg,#45c85a,#b4df4c)}
+#boardWrap{position:relative;background:#02070c;border:1px solid #294152;border-radius:14px;padding:5px;touch-action:none}
+#board{display:grid;gap:1px;aspect-ratio:1/1;width:100%;background:#02070c}
+.t{display:flex;align-items:center;justify-content:center;font-size:clamp(15px,4.25vw,24px);line-height:1;border-radius:1px;background:var(--floor);user-select:none;position:relative}
+.t.f2{background:var(--floor2)} .t.wall{background:var(--wall);color:#637687;font-size:10px}.t.void{background:#071018}
+.t.flash{animation:flash .15s 2}@keyframes flash{50%{filter:brightness(2)}}
+.enemyHp{position:absolute;left:8%;right:8%;bottom:2px;height:3px;background:#3a1e1e;border-radius:3px;overflow:hidden}.enemyHp i{display:block;height:100%;background:#ff6464}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:min(78vw,300px);margin:9px auto 6px}
+.ctrl{height:48px;border:0;border-radius:13px;background:#1d3040;color:white;font-size:21px;font-weight:800;box-shadow:0 2px 0 #02070c}.ctrl:active{transform:translateY(1px);background:#2a4356}.blank{visibility:hidden}
+.skills{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.skill{min-height:47px;border:1px solid #385164;border-radius:12px;background:#142735;color:white;text-align:left;padding:6px 9px;font-size:12px;line-height:1.2}
+.skill b{font-size:13px}.skill span{float:right;color:#a7bdc8}.skill:active{background:#21394a}.skill.off{opacity:.43}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.small{height:39px;border:1px solid #385164;border-radius:11px;background:#132532;color:#f4f7fb;font-weight:700}
+#log{height:64px;overflow:hidden;margin-top:7px;padding:7px 8px;border:1px solid #263d4c;border-radius:10px;background:#08121a;color:#cfe1ea;font-size:11px;line-height:1.35}
+.note{text-align:center;color:#8097a5;font-size:10px;margin-top:6px}
+.overlay{display:none;position:fixed;inset:0;background:#000b;z-index:20;align-items:center;justify-content:center;padding:20px}
+.modal{width:min(92vw,410px);background:#10202c;border:1px solid #466174;border-radius:18px;padding:20px;text-align:center}.modal h2{margin:0 0 8px}.modal p{color:#c4d4dc}.mainbtn{width:100%;height:48px;border:0;border-radius:13px;background:#2e8b57;color:#fff;font-size:16px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="title">🧭 ミニ不思議ダンジョン</div><div class="badge">10Fクリアで勝利</div></div>
+  <div class="hud">
+    <div class="card"><div class="big">冒険者 🟡　Lv.<span id="lv">1</span></div>HP <span id="hp">24</span>/<span id="maxhp">24</span><div class="bar"><div id="hpbar" class="fill"></div></div></div>
+    <div class="card"><b>B<span id="floor">1</span>F</b>　EXP <span id="exp">0</span>/<span id="next">12</span><br>攻撃 <span id="atk">5</span>　撃破 <span id="kills">0</span></div>
+  </div>
+  <div id="boardWrap"><div id="board"></div></div>
+
+  <div class="controls">
+    <button class="ctrl blank">•</button><button class="ctrl" onclick="move(0,-1)">▲</button><button class="ctrl blank">•</button>
+    <button class="ctrl" onclick="move(-1,0)">◀</button><button class="ctrl" onclick="waitTurn()">●</button><button class="ctrl" onclick="move(1,0)">▶</button>
+    <button class="ctrl blank">•</button><button class="ctrl" onclick="move(0,1)">▼</button><button class="ctrl blank">•</button>
+  </div>
+
+  <div class="skills">
+    <button class="skill" id="s0" onclick="useSkill(0)"><b>⚡ スパーク</b><span>PP 7</span><br>正面1マス・高威力</button>
+    <button class="skill" id="s1" onclick="useSkill(1)"><b>🌪 かぜぎり</b><span>PP 6</span><br>正面3マス</button>
+    <button class="skill" id="s2" onclick="useSkill(2)"><b>💫 まわりうち</b><span>PP 4</span><br>周囲の敵すべて</button>
+    <button class="skill" id="s3" onclick="useSkill(3)"><b>💚 いやし</b><span>PP 3</span><br>HPを12回復</button>
+  </div>
+  <div class="bottom">
+    <button class="small" onclick="eat()">🍎 きのみ ×<span id="berry">2</span></button>
+    <button class="small" onclick="restart()">↻ 最初から</button>
+  </div>
+  <div id="log"></div>
+  <div class="note">スワイプでも移動できます。敵にぶつかると通常攻撃。</div>
+</div>
+
+<div id="overlay" class="overlay"><div class="modal"><h2 id="ot"></h2><p id="op"></p><button class="mainbtn" onclick="restart()">もう一度あそぶ</button></div></div>
+
+<script>
+const W=11,H=11,DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+let map=[],player,enemies=[],items=[],stairs,fl=1,kills=0,lv=1,exp=0,next=12,maxhp=24,hp=24,atk=5,berry=2,dead=false,face=[0,1];
+let pp=[7,6,4,3],ppMax=[7,6,4,3];
+
+const R=n=>Math.floor(Math.random()*n), K=(x,y)=>x+","+y, D=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+function say(s){let e=document.getElementById("log");e.innerHTML="› "+s+"<br>"+e.innerHTML}
+function floorCell(x,y){return x>=0&&y>=0&&x<W&&y<H&&map[y][x]===0}
+function enemyAt(x,y){return enemies.find(e=>e.x===x&&e.y===y)}
+function itemAt(x,y){return items.find(i=>i.x===x&&i.y===y)}
+
+function genMap(){
+  map=Array.from({length:H},()=>Array(W).fill(1));
+  const rooms=[];
+  for(let n=0;n<6;n++){
+    let rw=3+R(3),rh=3+R(3),rx=1+R(Math.max(1,W-rw-2)),ry=1+R(Math.max(1,H-rh-2));
+    rooms.push({x:rx,y:ry,w:rw,h:rh});
+    for(let y=ry;y<ry+rh&&y<H-1;y++)for(let x=rx;x<rx+rw&&x<W-1;x++)map[y][x]=0;
+  }
+  for(let i=1;i<rooms.length;i++){
+    let a=rooms[i-1],b=rooms[i],x=Math.floor(a.x+a.w/2),y=Math.floor(a.y+a.h/2),tx=Math.floor(b.x+b.w/2),ty=Math.floor(b.y+b.h/2);
+    while(x!==tx){map[y][x]=0;x+=Math.sign(tx-x)}
+    while(y!==ty){map[y][x]=0;y+=Math.sign(ty-y)}
+    map[y][x]=0;
+  }
+}
+function randomCell(){
+  for(let g=0;g<1000;g++){let x=1+R(W-2),y=1+R(H-2);if(map[y][x]===0)return{x,y}}
+  return{x:1,y:1}
+}
+function occupied(x,y){return (player&&player.x===x&&player.y===y)||enemyAt(x,y)||itemAt(x,y)||(stairs&&stairs.x===x&&stairs.y===y)}
+function spawnFloor(){
+  genMap(); enemies=[];items=[]; stairs=null; player=randomCell();
+  do{stairs=randomCell()}while(occupied(stairs.x,stairs.y));
+  const n=Math.min(2+fl,8);
+  for(let i=0;i<n;i++){
+    let p;do{p=randomCell()}while(occupied(p.x,p.y)||D(p,player)<3);
+    let boss=fl===10&&i===0;
+    enemies.push({x:p.x,y:p.y,hp:boss?46:7+fl*2,max:boss?46:7+fl*2,atk:boss?8:2+Math.floor(fl/2),icon:boss?"👹":["🟣","🟢","🔴","🟦"][R(4)],boss});
+  }
+  const m=1+R(3);
+  for(let i=0;i<m;i++){let p;do{p=randomCell()}while(occupied(p.x,p.y));items.push({x:p.x,y:p.y,type:Math.random()<.7?"berry":"orb"})}
+  if(fl>1)hp=Math.min(maxhp,hp+4);
+  say(fl===10?"⚠️ 最深部。ボスを倒して階段へ！":"B"+fl+"F に到着。階段を探そう！");
+  render();
+}
+function render(){
+  const b=document.getElementById("board");b.innerHTML="";b.style.gridTemplateColumns="repeat("+W+",1fr)";
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    let d=document.createElement("div");d.className="t "+(((x+y)&1)?"f2":"");
+    if(map[y][x]===1){d.className="t wall";d.textContent="◆"}
+    else if(player.x===x&&player.y===y)d.textContent="🟡";
+    else{
+      let e=enemyAt(x,y),it=itemAt(x,y);
+      if(e){d.textContent=e.icon;let h=document.createElement("div");h.className="enemyHp";h.innerHTML="<i style='width:"+Math.max(0,e.hp/e.max*100)+"%'></i>";d.appendChild(h)}
+      else if(it)d.textContent=it.type==="berry"?"🍎":"🔷";
+      else if(stairs.x===x&&stairs.y===y)d.textContent="🔽";
+    }
+    b.appendChild(d);
+  }
+  document.getElementById("floor").textContent=fl;document.getElementById("lv").textContent=lv;
+  document.getElementById("exp").textContent=exp;document.getElementById("next").textContent=next;
+  document.getElementById("hp").textContent=Math.max(0,hp);document.getElementById("maxhp").textContent=maxhp;
+  document.getElementById("atk").textContent=atk;document.getElementById("kills").textContent=kills;document.getElementById("berry").textContent=berry;
+  document.getElementById("hpbar").style.width=Math.max(0,hp/maxhp*100)+"%";
+  for(let i=0;i<4;i++){let e=document.getElementById("s"+i);e.classList.toggle("off",pp[i]<=0);e.querySelector("span").textContent="PP "+pp[i]}
+}
+function pick(){
+  let it=itemAt(player.x,player.y);if(!it)return;
+  if(it.type==="berry"){berry++;say("🍎 きのみを拾った！")}else{pp=pp.map((v,i)=>Math.min(ppMax[i],v+2));say("🔷 PPが少し回復した！")}
+  items=items.filter(x=>x!==it);
+}
+function attack(e,dmg,label){
+  e.hp-=dmg;say(label+" "+e.icon+"に"+dmg+"ダメージ！");
+  if(e.hp<=0){let boss=e.boss;enemies=enemies.filter(x=>x!==e);kills++;gain(5+fl*2+(boss?20:0));if(Math.random()<.2){berry++;say("🍎 きのみを手に入れた！")}if(boss)say("👹 ボスを倒した！階段へ向かおう。")}
+}
+function move(dx,dy){
+  if(dead)return;face=[dx,dy];let nx=player.x+dx,ny=player.y+dy;
+  if(!floorCell(nx,ny)){say("壁だ。");return}
+  let e=enemyAt(nx,ny);
+  if(e)attack(e,atk+R(3),"通常攻撃！");
+  else{player.x=nx;player.y=ny;pick();if(nx===stairs.x&&ny===stairs.y){if(fl===10){if(enemies.some(e=>e.boss)){say("ボスを倒さないと進めない！");render();return}win();return}fl++;spawnFloor();return}}
+  enemyTurn();render();
+}
+function useSkill(i){
+  if(dead||pp[i]<=0){if(pp[i]<=0)say("PPがない！");return}
+  if(i===3){if(hp>=maxhp){say("HPは満タンだ。");return}pp[i]--;hp=Math.min(maxhp,hp+12);say("💚 HPを12回復！");enemyTurn();render();return}
+  let hits=[];
+  if(i===0){let e=enemyAt(player.x+face[0],player.y+face[1]);if(e)hits=[e]}
+  if(i===1){for(let n=1;n<=3;n++){let x=player.x+face[0]*n,y=player.y+face[1]*n;if(!floorCell(x,y))break;let e=enemyAt(x,y);if(e){hits=[e];break}}}
+  if(i===2)hits=enemies.filter(e=>Math.abs(e.x-player.x)<=1&&Math.abs(e.y-player.y)<=1);
+  pp[i]--;
+  if(!hits.length)say("技は空振り！");
+  else hits.slice().forEach(e=>attack(e,(i===0?atk+5:i===1?atk+3:atk+1)+R(4),["⚡","🌪","💫"][i]));
+  enemyTurn();render();
+}
+function enemyTurn(){
+  for(let e of enemies.slice()){
+    if(dead)return;
+    let dist=D(e,player);
+    if(dist===1){let dmg=e.atk+R(3);hp-=dmg;say(e.icon+"の攻撃！ "+dmg+"ダメージ。");if(hp<=0){lose();return}}
+    else{
+      let opts=DIRS.map(([dx,dy])=>({x:e.x+dx,y:e.y+dy})).filter(p=>floorCell(p.x,p.y)&&!(p.x===player.x&&p.y===player.y)&&!enemyAt(p.x,p.y));
+      if(opts.length){if(dist<=6)opts.sort((a,b)=>D(a,player)-D(b,player));let p=dist<=6?opts[0]:opts[R(opts.length)];e.x=p.x;e.y=p.y}
+    }
+  }
+}
+function gain(v){exp+=v;say("EXP "+v+"獲得。");while(exp>=next){exp-=next;lv++;next=Math.floor(next*1.42);maxhp+=5;hp=maxhp;atk+=2;pp=ppMax.slice();say("✨ Lv."+lv+"！ HP・PP全回復。")}}
+function eat(){if(dead)return;if(berry<=0){say("きのみがない。");return}if(hp>=maxhp){say("HPは満タンだ。");return}berry--;hp=Math.min(maxhp,hp+14);say("🍎 HPを14回復。");enemyTurn();render()}
+function waitTurn(){if(dead)return;say("その場で様子を見た。");enemyTurn();render()}
+function lose(){dead=true;render();show("💥 たおれてしまった…","B"+fl+"F / Lv."+lv+" / 撃破 "+kills+"体")}
+function win(){dead=true;show("🏆 ダンジョンクリア！","10Fを突破！ Lv."+lv+" / 撃破 "+kills+"体")}
+function show(t,p){document.getElementById("ot").textContent=t;document.getElementById("op").textContent=p;document.getElementById("overlay").style.display="flex"}
+function restart(){fl=1;kills=0;lv=1;exp=0;next=12;maxhp=24;hp=24;atk=5;berry=2;dead=false;face=[0,1];pp=ppMax.slice();document.getElementById("overlay").style.display="none";document.getElementById("log").innerHTML="";spawnFloor()}
+
+let sx=0,sy=0,wrap=document.getElementById("boardWrap");
+wrap.addEventListener("touchstart",e=>{let t=e.changedTouches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+wrap.addEventListener("touchend",e=>{let t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<22)return;if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0);else move(0,dy>0?1:-1)},{passive:true});
+document.addEventListener("keydown",e=>{let m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];if(m){e.preventDefault();move(...m)}});
+
+restart();
+</script>
+</body>
+</html>
