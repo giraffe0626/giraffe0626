@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#181e3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Study Bloom">
+<meta name="description" content="勉強時間を記録して、目標までのペースと成長が見える学習アプリ">
+<title>Study Bloom | 勉強記録</title>
+<style>
+:root{--bg:#f7f7fc;--white:#fff;--text:#222746;--muted:#81869d;--purple:#6554e8;--indigo:#272e62;--line:#e9e9f3;--mint:#5dbfa9;--shadow:0 7px 25px rgba(32,36,83,.055)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;font-size:14px;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}button{cursor:pointer}input,select,textarea{font-size:16px!important}
+.app{max-width:600px;margin:auto;min-height:100dvh;padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+.hero{background:linear-gradient(145deg,#1b214b,#343979 72%,#51458f);color:#fff;border-radius:0 0 28px 28px;padding:calc(20px + env(safe-area-inset-top)) 22px 24px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.12);width:220px;height:220px;border-radius:50%;top:-83px;right:-100px;pointer-events:none}
+.hero .kicker{font-size:11px;letter-spacing:2.8px;color:#c5c8ea;font-weight:800}.hero h1{margin:6px 0;font-size:27px;letter-spacing:.02em}
+.hero .sub{margin:0;color:#ced1ef;font-size:12px;line-height:1.7}
+.hero .monthbar{display:flex;justify-content:space-between;align-items:center;margin:24px 0 15px;position:relative;z-index:1}
+.month-title{font-weight:800;font-size:18px}.month-nav{display:flex;align-items:center;gap:10px}.month-nav button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12);color:white;border-radius:12px;width:36px;height:36px;font-size:22px;display:grid;place-items:center}
+.month-nav button:active{transform:scale(.96)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;position:relative;z-index:1}
+.stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:13px 9px;min-width:0}
+.stat small{font-size:10px;color:#d8daf4;display:block;white-space:nowrap}.stat strong{font-size:23px;display:block;line-height:1.4;letter-spacing:-.9px}.stat em{font-style:normal;font-size:10px;font-weight:500;color:#e2e2f6;margin-left:2px}
+.progress-track{margin-top:17px;background:rgba(255,255,255,.18);height:9px;border-radius:50px;overflow:hidden;position:relative}.progress-fill{width:0;height:100%;background:linear-gradient(90deg,#8af0cb,#d3ffb4);border-radius:50px;transition:width .35s}
+.progress-cap{margin-top:8px;display:flex;justify-content:space-between;color:#d4d8f2;font-size:11px}
+.content{padding:20px 16px 10px}.section{margin-bottom:21px}
+.section-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 1px 11px}.section-header h2{margin:0;font-size:16px;letter-spacing:.01em}.muted{color:var(--muted);font-size:12px}
+.card{background:#fff;border:1px solid #eeeef7;border-radius:19px;box-shadow:var(--shadow)}
+.summary-list{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.insight{padding:16px 14px;min-height:112px}
+.insight .icon{font-size:19px;margin-bottom:7px}.insight .label{color:var(--muted);font-size:11px}.insight .value{font-weight:800;font-size:20px;margin-top:6px;line-height:1.2}.insight .detail{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.45}
+.good{color:#198d72!important}.warn{color:#de7649!important}
+.calendar-card{padding:16px 10px 12px}
+.calendar-head{padding:0 7px 9px;display:flex;justify-content:space-between;align-items:center}.calendar-head strong{font-size:15px}.calendar-head small{color:var(--muted)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.weekday{text-align:center;color:#979bb2;font-size:11px;padding:8px 0;font-weight:800}
+.day{border:1px solid transparent;background:#f8f8fc;border-radius:13px;min-width:0;min-height:61px;padding:7px 0 5px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#373d5b;position:relative}
+.day.today:before{content:"";position:absolute;top:3px;right:4px;background:#9c90f7;width:5px;height:5px;border-radius:50%}
+.day.has{background:#f0ecff}.day.high{background:#e5f7f2}.day.selected{border:2px solid var(--purple);background:#f1efff;padding-top:6px;padding-bottom:4px}
+.day .n{font-weight:750;font-size:13px}.day .h{font-size:9px;white-space:nowrap;color:#6a55bf;font-weight:700}.day.high .h{color:#258b79}.day.empty{visibility:hidden}
+.legend{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px 5px 2px;color:var(--muted);font-size:10px}.dot{display:inline-block;width:9px;height:9px;border-radius:4px;margin-right:4px;background:#eee8ff}.dot.heavy{background:#bce7d9}
+.day-panel{padding:17px 16px}.day-panel .heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.day-panel h3{font-size:15px;margin:0}.day-total{font-size:12px;color:var(--purple);font-weight:800}
+.log-row{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding:11px 0}.log-row:first-child{border-top:none}
+.log-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.log-main{flex:1;min-width:0}.log-main strong{font-size:13px}.log-main p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.log-time{font-size:12px;font-weight:800;white-space:nowrap}.mini-btn{border:0;background:#f1effa;color:#6356af;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:700}
+.empty-msg{text-align:center;color:#a1a4b7;padding:19px 8px;line-height:1.8;font-size:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:7px;margin:12px 0}.field label{font-size:11px;font-weight:800;color:#666e8f}
+.field input,.field select,.field textarea{width:100%;border:1px solid #e2e4f0;background:#fbfbfe;color:#303657;padding:12px 12px;border-radius:12px;outline:0;min-height:46px}
+.field textarea{min-height:70px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#8e82ed;box-shadow:0 0 0 3px #eceaff}
+.btn{border:0;background:var(--purple);color:#fff;font-size:13px;font-weight:800;border-radius:13px;padding:13px 17px;min-height:45px}.btn:active{filter:brightness(.93)}.btn-light{color:#665bc0;background:#f0efff}.btn-danger{background:#fff0f0;color:#bc5757}.btn:disabled{opacity:.45}.full{width:100%}
+.split-buttons{display:flex;gap:9px}.split-buttons>*{flex:1}
+.panel{display:none}.panel.active{display:block}
+.analysis-top{padding:19px;margin-bottom:15px;background:linear-gradient(140deg,#fff,#f2f0ff)}
+.analysis-top .big{font-size:31px;font-weight:900;color:#5e53bc;margin:10px 0 3px}.bar-row{padding:13px 0;border-top:1px solid var(--line)}.bar-row:first-child{border-top:0}
+.bar-meta{display:flex;justify-content:space-between;gap:6px;font-size:12px;margin-bottom:7px}.bar-name{display:flex;align-items:center;gap:7px;font-weight:750}
+.bar-bg{height:9px;background:#eff0f8;border-radius:10px;overflow:hidden}.bar-value{height:100%;border-radius:10px}
+.chart-bars{display:flex;gap:6px;align-items:end;height:130px;margin-top:8px}.chart-week{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px;height:100%}.chart-week .column{width:75%;max-width:35px;background:linear-gradient(#8375ef,#c7c0ff);border-radius:7px 7px 3px 3px;min-height:3px}.chart-week small{font-size:10px;color:var(--muted)}
+.timer-card{padding:26px 18px;text-align:center}.timer-caption{color:var(--muted);font-size:11px;letter-spacing:1.2px;font-weight:800}
+.timer-time{font-variant-numeric:tabular-nums;font-size:57px;letter-spacing:-3px;font-weight:850;margin:21px 0;color:#2e326a}
+.timer-ring{margin:4px auto 14px;display:grid;place-items:center;width:185px;height:185px;border:9px solid #ece9ff;border-left-color:#8477ee;border-top-color:#8477ee;border-radius:50%}
+.timer-ring .timer-time{font-size:33px;letter-spacing:-1px;margin:0}.timer-ring small{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+.settings-group{padding:18px}.settings-group h3{font-size:15px;margin:0 0 12px}.settings-group p{font-size:12px;line-height:1.8;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:7px}.tag{padding:7px 10px;background:#f0effc;border-radius:20px;color:#635bb1;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}.tag button{border:0;background:transparent;color:#9c94c7;padding:0;font-size:16px}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;background:rgba(255,255,255,.97);border-top:1px solid #e8e8f3;padding:9px 12px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);z-index:10;backdrop-filter:blur(15px)}
+.nav{background:transparent;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:#989bb2;font-size:10px;font-weight:800;padding:5px 3px}.nav span:first-child{font-size:22px;line-height:1.1}.nav.active{color:#6755e9}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2e325c;color:white;padding:12px 18px;border-radius:13px;font-size:12px;box-shadow:0 8px 24px #0002;max-width:90vw;z-index:40;display:none;text-align:center}
+.toast.show{display:block}
+.notice{background:#f0f0fa;border-radius:12px;padding:12px;color:#777e99;font-size:11px;line-height:1.7;margin-top:12px}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}.spacer{height:3px}
+@media(max-width:375px){.hero{padding-left:15px;padding-right:15px}.content{padding-left:11px;padding-right:11px}.stat strong{font-size:19px}.day{min-height:55px}.summary-list{gap:8px}.insight{padding:12px 10px}.insight .value{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero" id="top-hero">
+<div class="kicker">GROW A LITTLE EVERY DAY</div>
+<h1>🌱 Study Bloom</h1>
+<p class="sub">今日の積み重ねを、明日の自信に。</p>
+<div class="monthbar">
+  <div class="month-title" id="month-label">2026年10月</div>
+  <div class="month-nav"><button type="button" id="prev-month" aria-label="前の月">‹</button><button type="button" id="next-month" aria-label="次の月">›</button></div>
+</div>
+<div class="stat-grid">
+  <div class="stat"><small>学習時間</small><strong id="total-hours">0<em>h</em></strong></div>
+  <div class="stat"><small>月間目標</small><strong id="goal-hours">40<em>h</em></strong></div>
+  <div class="stat"><small>達成率</small><strong id="achievement">0<em>%</em></strong></div>
+</div>
+<div class="progress-track"><div id="progress" class="progress-fill"></div></div>
+<div class="progress-cap"><span id="progress-label">目標まであと40時間</span><span id="month-days">0日学習</span></div>
+</header>
+
+<main class="content">
+<section id="panel-calendar" class="panel active">
+  <div class="section">
+    <div class="section-header"><h2>今月のインサイト ✨</h2><span class="muted">目標に向けて</span></div>
+    <div class="summary-list">
+      <div class="card insight"><div class="icon">📈</div><div class="label">先月との比較</div><div class="value" id="comparison">—</div><div class="detail" id="comparison-detail">先月の記録はありません</div></div>
+      <div class="card insight"><div class="icon">🎯</div><div class="label">目標達成に必要なペース</div><div class="value" id="pace">—</div><div class="detail" id="pace-detail">目標を設定しましょう</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><h2>学習カレンダー 🗓️</h2><span class="muted">日付をタップして記録</span></div>
+    <div class="card calendar-card">
+      <div class="calendar-head"><strong id="calendar-month"></strong><small id="calendar-count">学習 0日</small></div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+      <div class="legend"><span><i class="dot"></i>学習あり</span><span><i class="dot heavy"></i>2時間以上</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="card day-panel">
+      <div class="heading"><h3 id="selected-title">今日の学習記録</h3><span class="day-total" id="selected-total">合計 0分</span></div>
+      <div id="selected-logs"></div>
+      <hr>
+      <h3 id="form-heading" style="margin:0 0 6px;font-size:14px">＋ 学習を追加</h3>
+      <form id="entry-form">
+        <div class="form-grid">
+          <div class="field"><label for="entry-subject">科目・カテゴリー</label><select id="entry-subject"></select></div>
+          <div class="field"><label for="entry-minutes">学習時間（分）</label><input id="entry-minutes" type="number" min="1" max="1440" value="30" step="1" required inputmode="numeric"></div>
+        </div>
+        <div class="field"><label for="entry-note">勉強内容・できたこと</label><textarea id="entry-note" placeholder="例：英単語50個、過去問20問など" maxlength="400"></textarea></div>
+        <div class="split-buttons"><button class="btn" type="submit" id="entry-save">この内容を記録</button><button type="button" class="btn btn-light" id="entry-cancel" style="display:none">編集をやめる</button></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="panel-analysis" class="panel">
+  <div class="section-header"><h2>学習分析 📊</h2><span class="muted" id="analysis-month-label"></span></div>
+  <div class="card analysis-top"><div class="muted">この月の合計学習時間</div><div class="big" id="analysis-total">0時間</div><div class="muted" id="analysis-summary">記録した時間がここに表示されます</div></div>
+  <div class="section"><div class="section-header"><h2>科目別の学習時間</h2></div><div class="card" style="padding:12px 17px" id="subject-bars"></div></div>
+  <div class="section"><div class="section-header"><h2>週ごとの学習時間</h2></div><div class="card" style="padding:17px"><div id="weekly-chart" class="chart-bars"></div></div></div>
+  <div class="section"><div class="section-header"><h2>最近の学習</h2></div><div class="card" style="padding:8px 17px" id="recent-logs"></div></div>
+</section>
+
+<section id="panel-timer" class="panel">
+  <div class="section-header"><h2>集中タイマー ⏱️</h2><span class="muted">計測して自動記録</span></div>
+  <div class="card timer-card">
+    <div class="timer-caption">FOCUS SESSION</div>
+    <div class="timer-ring"><div><div class="timer-time" id="timer-clock">00:00:00</div><small id="timer-state">準備完了</small></div></div>
+    <div class="field" style="text-align:left"><label for="timer-subject">勉強する科目</label><select id="timer-subject"></select></div>
+    <div class="field" style="text-align:left"><label for="timer-note">勉強内容（終了後に記録）</label><textarea id="timer-note" maxlength="400" placeholder="例：リスニング、問題集2章"></textarea></div>
+    <div class="split-buttons"><button class="btn" id="timer-toggle" type="button">▶ 開始する</button><button class="btn btn-light" id="timer-finish" type="button" disabled>■ 終了して記録</button></div>
+    <button class="btn btn-danger full" id="timer-reset" type="button" style="margin-top:10px;min-height:38px">タイマーをリセット</button>
+    <p class="muted" style="line-height:1.8;margin:16px 0 0">画面を閉じても開始時刻から計算します。<br>終了した時間は1分単位（端数切り上げ）で記録します。</p>
+  </div>
+</section>
+
+<section id="panel-settings" class="panel">
+  <div class="section-header"><h2>目標・設定 ⚙️</h2><span class="muted">自分好みにカスタマイズ</span></div>
+  <div class="section card settings-group">
+    <h3>🎯 月間目標</h3><p id="goal-month-label"></p>
+    <form id="goal-form"><div class="field"><label for="goal-input">目標の勉強時間（時間）</label><input id="goal-input" type="number" min="0" max="744" step=".5" inputmode="decimal" required placeholder="例：40"></div><button class="btn full" type="submit">この月の目標を保存</button></form>
+    <p>別の月の目標は、上部の「‹」「›」で月を変更してから設定できます。</p>
+  </div>
+  <div class="section card settings-group"><h3>📚 科目・カテゴリー</h3><div class="tags" id="subject-tags"></div><form id="add-subject-form" style="display:flex;gap:8px;align-items:end"><div class="field" style="flex:1;margin-bottom:0"><label for="new-subject">新しい科目</label><input id="new-subject" maxlength="25" placeholder="例：TOEIC"></div><button class="btn" type="submit">追加</button></form></div>
+  <div class="section card settings-group"><h3>🔐 バックアップ・復元</h3><p>学習データは<strong>この端末のブラウザ内だけ</strong>に保存されます。サーバーへの送信や端末間同期はありません。定期的にバックアップしてください。</p>
+    <button class="btn btn-light full" id="export-data" type="button">⬇ JSONでバックアップ</button>
+    <div class="field"><label for="import-data">バックアップを復元（上書き）</label><input id="import-data" type="file" accept=".json,application/json"></div>
+    <div class="notice">Safariの履歴・Webサイトデータを削除したり、別のiPhoneで開いたりすると、記録を引き継げない場合があります。復元にはバックアップファイルを使います。</div>
+  </div>
+</section>
+</main>
+<nav class="bottom-nav" aria-label="メニュー">
+<button class="nav active" type="button" data-panel="calendar"><span>🗓️</span><span>記録</span></button>
+<button class="nav" type="button" data-panel="analysis"><span>📊</span><span>分析</span></button>
+<button class="nav" type="button" data-panel="timer"><span>⏱️</span><span>タイマー</span></button>
+<button class="nav" type="button" data-panel="settings"><span>⚙️</span><span>設定</span></button>
+</nav>
+<div class="toast" role="status" id="toast"></div>
+</div>
+<script>
+(function(){
+"use strict";
+var KEY="study-bloom-v1";
+var COLORS=["#7366df","#59baaa","#efaa6a","#d982a6","#74a3dd","#a3a0d0","#7ab879","#d59a5c"];
+function localDate(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function pad(n){return String(n).padStart(2,"0");}
+function monthKey(y,m){return y+"-"+pad(m+1);}
+function monthOf(d){return d.slice(0,7);}
+function daysIn(y,m){return new Date(y,m+1,0).getDate();}
+function minutesText(n){n=Math.max(0,Math.round(n));if(n===0)return "0分";var h=Math.floor(n/60),r=n%60;return h?(h+"時間"+(r?r+"分":"")):r+"分";}
+function shortTime(n){var h=n/60;return Number.isInteger(h)?String(h)+"h":h.toFixed(1).replace(/\.0$/,"")+"h";}
+function elem(id){return document.getElementById(id);}
+function node(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function cleanString(v,max){return String(v||"").slice(0,max);}
+function defaultState(){var s={records:[],goals:{},subjects:["英語","資格","読書","その他"],timer:{running:false,startedAt:0,elapsedMs:0,subject:"英語",note:""}};s.goals[monthKey(today.getFullYear(),today.getMonth())]=2400;return s;}
+var today=new Date(),nowY=today.getFullYear(),nowM=today.getMonth();
+var data;try{var raw=localStorage.getItem(KEY);data=raw?JSON.parse(raw):defaultState();if(!data||!Array.isArray(data.records)||!Array.isArray(data.subjects)||!data.goals)throw Error("invalid");}catch(e){data=defaultState();}
+if(!data.timer||typeof data.timer!=="object")data.timer={running:false,startedAt:0,elapsedMs:0,subject:"英語",note:""};
+var viewY=nowY,viewM=nowM,selectedDate=localDate(today),editId=null,activePanel="calendar";
+var activeToastTimer;
+function notify(msg){var e=elem("toast");e.textContent=msg;e.classList.add("show");clearTimeout(activeToastTimer);activeToastTimer=setTimeout(function(){e.classList.remove("show");},2700);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true;}catch(e){notify("保存できません。Safariのストレージ設定を確認してください");return false;}}
+function goal(){var g=data.goals[monthKey(viewY,viewM)];return Number.isFinite(g)?Math.max(0,g):0;}
+function recordsForMonth(y,m){var k=monthKey(y,m);return data.records.filter(function(r){return monthOf(r.date)===k;});}
+function sumOf(recs){return recs.reduce(function(a,r){return a+Number(r.minutes||0);},0);}
+function sortedLogs(recs){return recs.slice().sort(function(a,b){return b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id));});}
+function formatDate(d){var a=d.split("-");return Number(a[1])+"月"+Number(a[2])+"日";}
+function stats(){
+var list=recordsForMonth(viewY,viewM),total=sumOf(list),g=goal(),pct=g?Math.round(total/g*100):0;
+var prev=new Date(viewY,viewM-1,1),prevTotal=sumOf(recordsForMonth(prev.getFullYear(),prev.getMonth()));
+var unique=new Set(list.filter(function(r){return r.minutes>0;}).map(function(r){return r.date;})).size;
+return {list:list,total:total,goal:g,pct:pct,prevTotal:prevTotal,unique:unique};
+}
+function monthTitle(){return viewY+"年"+(viewM+1)+"月";}
+function renderHero(s){
+elem("month-label").textContent=monthTitle();
+elem("total-hours").replaceChildren(document.createTextNode(shortTime(s.total)));
+elem("goal-hours").textContent=s.goal?shortTime(s.goal):"未設定";
+elem("achievement").textContent=s.goal?s.pct+"%":"—";
+elem("progress").style.width=(s.goal?Math.min(100,s.pct):0)+"%";
+elem("progress-label").textContent=!s.goal?"目標を設定すると達成率が見えます":s.total>=s.goal?"🎉 月間目標を達成しました！":"目標まであと "+minutesText(s.goal-s.total);
+elem("month-days").textContent=s.unique+"日学習";
+}
+function renderInsights(s){
+if(s.prevTotal===0){elem("comparison").textContent=s.total?"+"+minutesText(s.total):"—";elem("comparison-detail").textContent="先月の記録なし（増減率は算出不可）";}
+else{var diff=s.total-s.prevTotal;var pct=Math.round(diff/s.prevTotal*100);elem("comparison").textContent=(pct>0?"+":"")+pct+"%";elem("comparison").className="value "+(pct>0?"good":pct<0?"warn":"");elem("comparison-detail").textContent="先月 "+minutesText(s.prevTotal)+" / "+(diff>=0?"+":"−")+minutesText(Math.abs(diff));}
+if(!s.goal){elem("pace").textContent="未設定";elem("pace-detail").textContent="設定から月間目標を登録できます";return;}
+if(s.total>=s.goal){elem("pace").textContent="達成！🎉";elem("pace").className="value good";elem("pace-detail").textContent="目標より "+minutesText(s.total-s.goal)+" 多く勉強しています";return;}
+var thisMonth=(viewY===nowY&&viewM===nowM),past=new Date(viewY,viewM+1,1)<=new Date(nowY,nowM,1);
+if(past){elem("pace").textContent="未達成";elem("pace").className="value warn";elem("pace-detail").textContent="目標まで "+minutesText(s.goal-s.total)+" でした";return;}
+var remainDays=daysIn(viewY,viewM)-(thisMonth?today.getDate():1)+1;
+var perDay=Math.ceil((s.goal-s.total)/remainDays);
+elem("pace").textContent=minutesText(perDay)+"/日";
+elem("pace").className="value";
+elem("pace-detail").textContent="残り"+remainDays+"日 × 平均"+minutesText(perDay)+" / 目標まで"+minutesText(s.goal-s.total);
+}
+function renderCalendar(s){
+elem("calendar-month").textContent=monthTitle();elem("calendar-count").textContent="学習 "+s.unique+"日";
+var grid=elem("calendar-grid");grid.replaceChildren();
+["日","月","火","水","木","金","土"].forEach(function(w){grid.appendChild(node("div","weekday",w));});
+var first=new Date(viewY,viewM,1).getDay(),count=daysIn(viewY,viewM),amount={};
+s.list.forEach(function(r){amount[r.date]=(amount[r.date]||0)+Number(r.minutes);});
+for(var i=0;i<first;i++)grid.appendChild(node("div","day empty"));
+for(var d=1;d<=count;d++){
+var key=localDate(new Date(viewY,viewM,d)),mins=amount[key]||0;
+var cls="day"+(mins>=120?" high":mins>0?" has":"")+(selectedDate===key?" selected":"")+(localDate(today)===key?" today":"");
+var btn=node("button",cls);btn.type="button";btn.setAttribute("aria-label",formatDate(key)+(mins?"、"+minutesText(mins):"、記録なし"));
+btn.dataset.date=key;btn.appendChild(node("span","n",d));btn.appendChild(node("span","h",mins?shortTime(mins):"・"));grid.appendChild(btn);
+}
+grid.querySelectorAll("button[data-date]").forEach(function(b){b.addEventListener("click",function(){selectedDate=b.dataset.date;resetEdit();renderCalendar(stats());renderSelectedDay();});});
+}
+function renderSelectedDay(){
+elem("selected-title").textContent=formatDate(selectedDate)+"の学習記録";
+var list=sortedLogs(data.records.filter(function(r){return r.date===selectedDate;}));
+elem("selected-total").textContent="合計 "+minutesText(sumOf(list));
+var box=elem("selected-logs");box.replaceChildren();
+if(!list.length){box.appendChild(node("div","empty-msg","まだ記録がありません。下のフォームから追加しよう！"));return;}
+list.forEach(function(r){
+var row=node("div","log-row"),dot=node("span","log-dot"),main=node("div","log-main"),title=node("strong","",cleanString(r.subject,25));
+dot.style.background=COLORS[Math.max(0,data.subjects.indexOf(r.subject))%COLORS.length];
+main.appendChild(title);if(r.note)main.appendChild(node("p","",cleanString(r.note,400)));
+var t=node("div","log-time",minutesText(r.minutes)),b=node("button","mini-btn","編集");b.type="button";b.addEventListener("click",function(){editId=r.id;elem("entry-subject").value=r.subject;elem("entry-minutes").value=r.minutes;elem("entry-note").value=r.note||"";elem("form-heading").textContent="✏️ 記録を編集";elem("entry-save").textContent="変更を保存";elem("entry-cancel").style.display="block";elem("entry-form").scrollIntoView({behavior:"smooth",block:"center"});});
+row.append(dot,main,t,b);box.appendChild(row);
+});
+}
+function resetEdit(){editId=null;elem("entry-form").reset();elem("entry-minutes").value="30";elem("form-heading").textContent="＋ 学習を追加";elem("entry-save").textContent="この内容を記録";elem("entry-cancel").style.display="none";}
+function fillSubjects(){["entry-subject","timer-subject"].forEach(function(id){var s=elem(id),old=s.value;s.replaceChildren();data.subjects.forEach(function(x){var o=document.createElement("option");o.value=x;o.textContent=x;s.appendChild(o);});s.value=data.subjects.includes(old)?old:data.subjects[0];});}
+function renderAnalysis(s){
+elem("analysis-month-label").textContent=monthTitle();
+elem("analysis-total").textContent=minutesText(s.total);
+elem("analysis-summary").textContent=s.unique+"日学習 / 1学習日あたり "+(s.unique?minutesText(Math.round(s.total/s.unique)):"0分")+" / 目標 "+(s.goal?Math.round(s.pct)+"%":"未設定");
+var totals={};s.list.forEach(function(r){totals[r.subject]=(totals[r.subject]||0)+Number(r.minutes);});
+var bars=elem("subject-bars");bars.replaceChildren();var cats=Object.keys(totals).sort(function(a,b){return totals[b]-totals[a];});
+if(!cats.length)bars.appendChild(node("div","empty-msg","勉強を記録すると、科目ごとの比率が表示されます"));
+cats.forEach(function(cat,i){var n=totals[cat],r=node("div","bar-row"),meta=node("div","bar-meta"),name=node("div","bar-name");var dot=node("span","log-dot");dot.style.background=COLORS[i%COLORS.length];name.append(dot,node("span","",cat));meta.append(name,node("strong","",minutesText(n)+" / "+Math.round(n/s.total*100)+"%"));var bg=node("div","bar-bg"),bar=node("div","bar-value");bar.style.background=COLORS[i%COLORS.length];bar.style.width=(n/s.total*100)+"%";bg.appendChild(bar);r.append(meta,bg);bars.appendChild(r);});
+var weeks=[],count=daysIn(viewY,viewM);
+for(var day=1;day<=count;day+=7){var end=Math.min(day+6,count);var n=s.list.filter(function(r){var d=Number(r.date.slice(8));return d>=day&&d<=end;});weeks.push({label:Math.ceil(day/7)+"週",total:sumOf(n)});}
+var chart=elem("weekly-chart");chart.replaceChildren();var max=Math.max(1,...weeks.map(function(w){return w.total;}));
+weeks.forEach(function(w){var col=node("div","chart-week"),bar=node("div","column");bar.style.height=Math.max(3,(w.total/max)*105)+"px";bar.title=minutesText(w.total);col.append(bar,node("small","",w.label));chart.appendChild(col);});
+var recent=elem("recent-logs");recent.replaceChildren();
+if(!s.list.length)recent.appendChild(node("div","empty-msg","記録がまだありません"));
+sortedLogs(s.list).slice(0,8).forEach(function(r){var row=node("div","log-row"),main=node("div","log-main");main.append(node("strong","",formatDate(r.date)+" ・ "+r.subject),node("p","",r.note||"学習を記録しました"));row.append(main,node("div","log-time",minutesText(r.minutes)));recent.appendChild(row);});
+}
+function renderSettings(){elem("goal-month-label").textContent=monthTitle()+"の目標を設定";elem("goal-input").value=goal()?goal()/60:"";var tags=elem("subject-tags");tags.replaceChildren();data.subjects.forEach(function(s,i){var tag=node("div","tag",s);if(data.subjects.length>1){var del=node("button","","×");del.type="button";del.setAttribute("aria-label",s+"を科目一覧から削除");del.addEventListener("click",function(){if(!confirm("科目「"+s+"」を選択肢から削除しますか？\n過去の記録は削除されません。"))return;data.subjects.splice(i,1);if(!data.subjects.includes(data.timer.subject))data.timer.subject=data.subjects[0];save();fillSubjects();renderSettings();});tag.appendChild(del);}tags.appendChild(tag);});}
+function render(){var s=stats();renderHero(s);renderInsights(s);renderCalendar(s);renderSelectedDay();renderAnalysis(s);renderSettings();}
+function switchPanel(name){activePanel=name;document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("active",p.id==="panel-"+name);});document.querySelectorAll(".nav").forEach(function(n){n.classList.toggle("active",n.dataset.panel===name);});window.scrollTo({top:0,behavior:"instant"});render();}
+document.querySelectorAll(".nav").forEach(function(n){n.addEventListener("click",function(){switchPanel(n.dataset.panel);});});
+function changeMonth(d){var m=new Date(viewY,viewM+d,1);viewY=m.getFullYear();viewM=m.getMonth();selectedDate=localDate(new Date(viewY,viewM,Math.min(today.getDate(),daysIn(viewY,viewM))));resetEdit();render();}
+elem("prev-month").addEventListener("click",function(){changeMonth(-1);});
+elem("next-month").addEventListener("click",function(){changeMonth(1);});
+elem("entry-form").addEventListener("submit",function(ev){
+ev.preventDefault();var m=Number(elem("entry-minutes").value),cat=elem("entry-subject").value,note=elem("entry-note").value.trim().slice(0,400);
+if(!Number.isInteger(m)||m<1||m>1440){notify("1〜1440分の範囲で入力してください");return;}
+if(!cat){notify("科目を選択してください");return;}
+if(editId){var r=data.records.find(function(r){return r.id===editId;});if(r){r.minutes=m;r.subject=cat;r.note=note;}notify("記録を更新しました");}
+else{data.records.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,7),date:selectedDate,minutes:m,subject:cat,note:note});notify("学習を記録しました 🌱");}
+save();resetEdit();render();
+});
+elem("entry-cancel").addEventListener("click",resetEdit);
+elem("goal-form").addEventListener("submit",function(ev){ev.preventDefault();var g=Number(elem("goal-input").value);if(!Number.isFinite(g)||g<0||g>744){notify("0〜744時間で設定してください");return;}data.goals[monthKey(viewY,viewM)]=Math.round(g*60);save();render();notify("月間目標を更新しました 🎯");});
+elem("add-subject-form").addEventListener("submit",function(ev){ev.preventDefault();var t=elem("new-subject").value.trim().slice(0,25);if(!t){notify("科目名を入力してください");return;}if(data.subjects.includes(t)){notify("同じ名前の科目があります");return;}if(data.subjects.length>=15){notify("科目は15個まで追加できます");return;}data.subjects.push(t);elem("new-subject").value="";save();fillSubjects();renderSettings();notify("科目を追加しました");});
+function elapsed(){var t=data.timer;return Math.max(0,Number(t.elapsedMs)||0)+(t.running?Math.max(0,Date.now()-Number(t.startedAt||Date.now())):0);}
+function timerRender(){
+var ms=elapsed(),sec=Math.floor(ms/1000),hh=Math.floor(sec/3600),mm=Math.floor((sec%3600)/60),ss=sec%60;
+elem("timer-clock").textContent=pad(hh)+":"+pad(mm)+":"+pad(ss);
+elem("timer-toggle").textContent=data.timer.running?"Ⅱ 一時停止":ms>0?"▶ 再開する":"▶ 開始する";
+elem("timer-finish").disabled=ms<1000;
+elem("timer-state").textContent=data.timer.running?"集中中…":ms>0?"一時停止中":"準備完了";
+}
+function rememberTimerFields(){data.timer.subject=elem("timer-subject").value;data.timer.note=elem("timer-note").value.slice(0,400);}
+elem("timer-toggle").addEventListener("click",function(){rememberTimerFields();if(data.timer.running){data.timer.elapsedMs=elapsed();data.timer.startedAt=0;data.timer.running=false;}else{data.timer.startedAt=Date.now();data.timer.running=true;}save();timerRender();});
+elem("timer-finish").addEventListener("click",function(){
+var ms=elapsed();if(ms<1000){notify("1秒以上計測してから保存してください");return;}
+rememberTimerFields();var mins=Math.ceil(ms/60000);if(mins>1440){notify("24時間を超える記録は、手動で複数日に分けてください");return;}
+var date=localDate(new Date());data.records.push({id:Date.now()+"-timer",date:date,minutes:mins,subject:data.timer.subject,note:data.timer.note.trim()});
+data.timer={running:false,startedAt:0,elapsedMs:0,subject:data.timer.subject,note:""};elem("timer-note").value="";save();
+var d=new Date();viewY=d.getFullYear();viewM=d.getMonth();selectedDate=date;resetEdit();render();timerRender();switchPanel("calendar");notify(minutesText(mins)+"の学習を記録しました 🌱");
+});
+elem("timer-reset").addEventListener("click",function(){if(elapsed()>0&&!confirm("計測中の時間を破棄しますか？"))return;rememberTimerFields();data.timer.running=false;data.timer.startedAt=0;data.timer.elapsedMs=0;save();timerRender();notify("タイマーをリセットしました");});
+elem("timer-subject").addEventListener("change",function(){rememberTimerFields();save();});
+elem("timer-note").addEventListener("change",function(){rememberTimerFields();save();});
+function validBackup(o){
+if(!o||!Array.isArray(o.records)||!Array.isArray(o.subjects)||!o.goals||typeof o.goals!=="object"||o.records.length>30000||o.subjects.length>100)throw Error("形式が不正です");
+var records=o.records.map(function(r,i){if(!r||!(/^\d{4}-\d{2}-\d{2}$/).test(r.date)||!Number.isInteger(r.minutes)||r.minutes<1||r.minutes>1440)throw Error("記録の形式が不正です");var date=new Date(r.date+"T12:00:00");if(isNaN(date.getTime())||localDate(date)!==r.date)throw Error("日付が不正です");return {id:cleanString(r.id||i,50),date:r.date,subject:cleanString(r.subject||"その他",25),note:cleanString(r.note,400),minutes:r.minutes};});
+var goals={};Object.keys(o.goals).forEach(function(k){var v=o.goals[k];if((/^\d{4}-\d{2}$/).test(k)&&Number.isFinite(v)&&v>=0&&v<=44640)goals[k]=v;});
+var subs=o.subjects.map(function(s){return cleanString(s,25).trim();}).filter(Boolean).slice(0,15);if(!subs.length)subs=["その他"];return {records:records,goals:goals,subjects:[...new Set(subs)],timer:{running:false,startedAt:0,elapsedMs:0,subject:subs[0],note:""}};
+}
+elem("export-data").addEventListener("click",function(){var blob=new Blob([JSON.stringify({app:"Study Bloom",version:1,exportedAt:new Date().toISOString(),records:data.records,goals:data.goals,subjects:data.subjects},null,2)],{type:"application/json"});var url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="study-bloom-backup-"+localDate(new Date())+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},15000);notify("バックアップを作成しました");});
+elem("import-data").addEventListener("change",async function(ev){var f=ev.target.files&&ev.target.files[0];if(!f)return;try{if(f.size>7*1024*1024)throw Error("ファイルが大きすぎます");var t=await f.text();var next=validBackup(JSON.parse(t));if(confirm("現在の記録・目標をバックアップの内容で上書きしますか？\nこの操作は取り消せません。")){data=next;save();fillSubjects();var d=new Date();viewY=d.getFullYear();viewM=d.getMonth();selectedDate=localDate(d);resetEdit();render();timerRender();notify("バックアップを復元しました");}}catch(e){notify("読み込めませんでした："+cleanString(e.message,45));}ev.target.value="";});
+fillSubjects();if(data.subjects.includes(data.timer.subject))elem("timer-subject").value=data.timer.subject;
+elem("timer-note").value=data.timer.note||"";render();timerRender();setInterval(timerRender,1000);
+window.addEventListener("focus",function(){today=new Date();nowY=today.getFullYear();nowM=today.getMonth();if(activePanel==="calendar")render();timerRender();});
+})();
+</script>
+</body></html>
