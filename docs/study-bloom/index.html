@@ -124,7 +124,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}.spacer{height:3px}
           <div class="field"><label for="entry-minutes">学習時間（分）</label><input id="entry-minutes" type="number" min="1" max="1440" value="30" step="1" required inputmode="numeric"></div>
         </div>
         <div class="field"><label for="entry-note">勉強内容・できたこと</label><textarea id="entry-note" placeholder="例：英単語50個、過去問20問など" maxlength="400"></textarea></div>
-        <div class="split-buttons"><button class="btn" type="submit" id="entry-save">この内容を記録</button><button type="button" class="btn btn-light" id="entry-cancel" style="display:none">編集をやめる</button></div>
+        <div class="split-buttons"><button class="btn" type="submit" id="entry-save">この内容を記録</button><button type="button" class="btn btn-light" id="entry-cancel" style="display:none">編集をやめる</button><button type="button" class="btn btn-danger" id="entry-delete" style="display:none">削除</button></div>
       </form>
     </div>
   </div>
@@ -256,11 +256,11 @@ list.forEach(function(r){
 var row=node("div","log-row"),dot=node("span","log-dot"),main=node("div","log-main"),title=node("strong","",cleanString(r.subject,25));
 dot.style.background=COLORS[Math.max(0,data.subjects.indexOf(r.subject))%COLORS.length];
 main.appendChild(title);if(r.note)main.appendChild(node("p","",cleanString(r.note,400)));
-var t=node("div","log-time",minutesText(r.minutes)),b=node("button","mini-btn","編集");b.type="button";b.addEventListener("click",function(){editId=r.id;elem("entry-subject").value=r.subject;elem("entry-minutes").value=r.minutes;elem("entry-note").value=r.note||"";elem("form-heading").textContent="✏️ 記録を編集";elem("entry-save").textContent="変更を保存";elem("entry-cancel").style.display="block";elem("entry-form").scrollIntoView({behavior:"smooth",block:"center"});});
+var t=node("div","log-time",minutesText(r.minutes)),b=node("button","mini-btn","編集");b.type="button";b.addEventListener("click",function(){editId=r.id;elem("entry-subject").value=r.subject;elem("entry-minutes").value=r.minutes;elem("entry-note").value=r.note||"";elem("form-heading").textContent="✏️ 記録を編集";elem("entry-save").textContent="変更を保存";elem("entry-cancel").style.display="block";elem("entry-delete").style.display="block";elem("entry-form").scrollIntoView({behavior:"smooth",block:"center"});});
 row.append(dot,main,t,b);box.appendChild(row);
 });
 }
-function resetEdit(){editId=null;elem("entry-form").reset();elem("entry-minutes").value="30";elem("form-heading").textContent="＋ 学習を追加";elem("entry-save").textContent="この内容を記録";elem("entry-cancel").style.display="none";}
+function resetEdit(){editId=null;elem("entry-form").reset();elem("entry-minutes").value="30";elem("form-heading").textContent="＋ 学習を追加";elem("entry-save").textContent="この内容を記録";elem("entry-cancel").style.display="none";elem("entry-delete").style.display="none";}
 function fillSubjects(){["entry-subject","timer-subject"].forEach(function(id){var s=elem(id),old=s.value;s.replaceChildren();data.subjects.forEach(function(x){var o=document.createElement("option");o.value=x;o.textContent=x;s.appendChild(o);});s.value=data.subjects.includes(old)?old:data.subjects[0];});}
 function renderAnalysis(s){
 elem("analysis-month-label").textContent=monthTitle();
@@ -294,6 +294,7 @@ else{data.records.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,7),
 save();resetEdit();render();
 });
 elem("entry-cancel").addEventListener("click",resetEdit);
+elem("entry-delete").addEventListener("click",function(){if(!editId)return;if(!confirm("この勉強記録を削除しますか？"))return;data.records=data.records.filter(function(r){return r.id!==editId;});save();resetEdit();render();notify("記録を削除しました");});
 elem("goal-form").addEventListener("submit",function(ev){ev.preventDefault();var g=Number(elem("goal-input").value);if(!Number.isFinite(g)||g<0||g>744){notify("0〜744時間で設定してください");return;}data.goals[monthKey(viewY,viewM)]=Math.round(g*60);save();render();notify("月間目標を更新しました 🎯");});
 elem("add-subject-form").addEventListener("submit",function(ev){ev.preventDefault();var t=elem("new-subject").value.trim().slice(0,25);if(!t){notify("科目名を入力してください");return;}if(data.subjects.includes(t)){notify("同じ名前の科目があります");return;}if(data.subjects.length>=15){notify("科目は15個まで追加できます");return;}data.subjects.push(t);elem("new-subject").value="";save();fillSubjects();renderSettings();notify("科目を追加しました");});
 function elapsed(){var t=data.timer;return Math.max(0,Number(t.elapsedMs)||0)+(t.running?Math.max(0,Date.now()-Number(t.startedAt||Date.now())):0);}
